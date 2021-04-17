@@ -296,11 +296,10 @@ namespace SwatInc.Lis.Lis01A2.Services
             }
             _lastFrameWasIntermediate = etxOrEtb == ETB;
 
-            //This CR not present in ASTM frames sent by of Randox Evidence Investigator
-            //if (frame[lineLength - 6] != CR)
-            //{
-            //    return result;
-            //}
+            if (frame[lineLength - 6] != CR)
+            {
+                return result;
+            }
 
             var calculatedCheckSum = CalculateChecksum(frame.Substring(1, lineLength - 5));
             var receivedCheckSum = frame.Substring(lineLength - 4, 2);
