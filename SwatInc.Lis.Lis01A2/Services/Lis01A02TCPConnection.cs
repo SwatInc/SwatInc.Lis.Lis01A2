@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using slf4net;
 using SwatInc.Lis.Lis01A2.Interfaces;
 using System;
 using System.Net;
@@ -19,13 +19,13 @@ namespace SwatInc.Lis.Lis01A2.Services
         #endregion
 
         public event EventHandler<LISConnectionReceivedDataEventArgs> OnReceiveString;
-
+        
         #region Constructors
         public Lis01A02TCPConnection(string aNetWorkAddress, ushort aNetWorkPort)
         {
             NetWorkAddress = aNetWorkAddress;
             NetWorkPort = aNetWorkPort;
-            _logger = new LoggerFactory().CreateLogger<Lis01A02TCPConnection>();
+            _logger = LoggerFactory.GetLogger(typeof(Lis01A02TCPConnection));
         }
         #endregion
 
@@ -77,7 +77,7 @@ namespace SwatInc.Lis.Lis01A2.Services
             catch (SocketException ex) when (ex.ErrorCode == 10057)
             {
                 // Log the exception and exit to stop receiving.
-                _logger.LogError(ex.Message);
+                _logger.Error(ex.Message);
             }
         }
 
@@ -86,7 +86,7 @@ namespace SwatInc.Lis.Lis01A2.Services
             await Task.Run(() =>
             {
                 _isInServerMode = true;
-                TcpListener server = new (IPAddress.Parse(NetWorkAddress), NetWorkPort);
+                TcpListener server = new TcpListener(IPAddress.Parse(NetWorkAddress), NetWorkPort);
                 server.Start();
                 byte[] bytes = new Byte[1024];
                 string data = null;

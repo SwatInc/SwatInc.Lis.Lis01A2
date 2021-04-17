@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using slf4net;
 using SwatInc.Lis.Lis01A2.Interfaces;
 using System;
 using System.Globalization;
@@ -26,14 +26,14 @@ namespace SwatInc.Lis.Lis01A2.Services
         private readonly ILogger _logger;
 
         private ILis01A2Connection _connection;
-        private readonly StringBuilder _tempReceiveBuffer = new();
+        private readonly StringBuilder _tempReceiveBuffer = new StringBuilder();
         private string _tempIntermediateFrameBuffer;
 
-        private readonly EventWaitHandle _enqWaitObject = new(true, EventResetMode.ManualReset);
-        private readonly EventWaitHandle _ackWaitObject = new(true, EventResetMode.ManualReset);
-        private readonly EventWaitHandle _eotWaitObject = new(true, EventResetMode.ManualReset);
+        private readonly EventWaitHandle _enqWaitObject = new EventWaitHandle(true, EventResetMode.ManualReset);
+        private readonly EventWaitHandle _ackWaitObject = new EventWaitHandle(true, EventResetMode.ManualReset);
+        private readonly EventWaitHandle _eotWaitObject = new EventWaitHandle(true, EventResetMode.ManualReset);
         private bool _ackReceived;
-        private readonly System.Timers.Timer _receiveTimeOutTimer = new();
+        private readonly System.Timers.Timer _receiveTimeOutTimer = new System.Timers.Timer();
         private int _frameNumber;
         private bool _lastFrameWasIntermediate;
         protected internal bool _isDisposed;
@@ -57,7 +57,7 @@ namespace SwatInc.Lis.Lis01A2.Services
             _receiveTimeOutTimer.Interval = timeOut * 1000;
             _receiveTimeOutTimer.Enabled = false;
             _receiveTimeOutTimer.Elapsed += ReceiveTimeOutTimer_Elapsed;
-            _logger = new LoggerFactory().CreateLogger<Lis01A2Connection>();
+            _logger = LoggerFactory.GetLogger(typeof(Lis01A2Connection));
         }
         #endregion
 
@@ -99,14 +99,14 @@ namespace SwatInc.Lis.Lis01A2.Services
                                     {
                                         if (currentCharacter != ENQ)
                                         {
-                                            _logger.LogDebug("send <NAK>");
+                                            _logger.Debug("send <NAK>");
                                             Connection.WriteData($"{NAK}");
                                         }
                                         else
                                         {
-                                            _logger.LogDebug("received <ENQ>");
+                                            _logger.Debug("received <ENQ>");
                                             Connection.WriteData($"{ACK}");
-                                            _logger.LogDebug("send <ACK>");
+                                            _logger.Debug("send <ACK>");
                                             Status = LisConnectionStatus.Receiving;
                                             _eotWaitObject.Reset();
                                             _tempReceiveBuffer.Clear();
@@ -127,9 +127,9 @@ namespace SwatInc.Lis.Lis01A2.Services
                                         _receiveTimeOutTimer.Start();
                                         if (currentCharacter == ENQ)
                                         {
-                                            _logger.LogDebug("received <ENQ>");
+                                            _logger.Debug("received <ENQ>");
                                             Connection.WriteData($"{NAK}");
-                                            _logger.LogDebug("send <NAK>");
+                                            _logger.Debug("send <NAK>");
                                             return;
                                         }
                                         else if (currentCharacter != EOT)
@@ -143,13 +143,14 @@ namespace SwatInc.Lis.Lis01A2.Services
                                                 string tempReceiveBuffer = _tempReceiveBuffer.ToString();
                                                 if (!CheckChecksum(tempReceiveBuffer))
                                                 {
-                                                    _logger.LogDebug("send <NAK>");
+                                                    _logger.Error($"CHECKSUM INVALID. FRAME: {_tempIntermediateFrameBuffer}");
+                                                    _logger.Debug("send <NAK>");
                                                     Connection.WriteData($"{NAK}");
                                                     _tempReceiveBuffer.Clear();
                                                 }
                                                 else
                                                 {
-                                                    _logger.LogDebug("send <ACK>");
+                                                    _logger.Debug("send <ACK>");
                                                     Connection.WriteData($"{ACK}");
                                                     string cleanReceiveBuffer = tempReceiveBuffer.Substring(2, tempReceiveBuffer.Length - 7);
                                                     if (_lastFrameWasIntermediate)
@@ -160,7 +161,7 @@ namespace SwatInc.Lis.Lis01A2.Services
                                                     {
                                                         string frame = string.Concat(_tempIntermediateFrameBuffer, cleanReceiveBuffer);
                                                         OnReceiveString?.Invoke(this, new LISConnectionReceivedDataEventArgs(frame));
-                                                        _logger.LogInformation(string.Concat("received: ", frame));
+                                                        _logger.Info(string.Concat("received: ", frame));
                                                     }
                                                     _tempReceiveBuffer.Clear();
                                                     _tempIntermediateFrameBuffer = string.Empty;
@@ -171,7 +172,7 @@ namespace SwatInc.Lis.Lis01A2.Services
                                         else
                                         {
                                             _receiveTimeOutTimer.Stop();
-                                            _logger.LogDebug("received <EOT>");
+                                            _logger.Debug("received <EOT>");
                                             Status = LisConnectionStatus.Idle;
                                             _eotWaitObject.Set();
                                             return;
@@ -181,7 +182,7 @@ namespace SwatInc.Lis.Lis01A2.Services
                                     {
                                         if (currentCharacter == ACK)
                                         {
-                                            _logger.LogDebug("received <ACK>");
+                                            _logger.Debug("received <ACK>");
                                             Status = LisConnectionStatus.Sending;
                                             _enqWaitObject.Set();
                                             return;
@@ -192,9 +193,9 @@ namespace SwatInc.Lis.Lis01A2.Services
                                         }
                                         else
                                         {
-                                            _logger.LogDebug("received <ENQ>");
+                                            _logger.Debug("received <ENQ>");
                                             Thread.Sleep(1000);
-                                            _logger.LogDebug("send <ENQ>");
+                                            _logger.Debug("send <ENQ>");
                                             Connection.WriteData($"{ENQ}");
                                             return;
                                         }
@@ -295,12 +296,17 @@ namespace SwatInc.Lis.Lis01A2.Services
             }
             _lastFrameWasIntermediate = etxOrEtb == ETB;
 
-            if (frame[lineLength - 6] != CR)
+            //This CR not present in ASTM frames sent by of Randox Evidence Investigator
+            //if (frame[lineLength - 6] != CR)
+            //{
+            //    return result;
+            //}
+
+            var calculatedCheckSum = CalculateChecksum(frame.Substring(1, lineLength - 5));
+            var receivedCheckSum = frame.Substring(lineLength - 4, 2);
+            if (receivedCheckSum != calculatedCheckSum)
             {
-                return result;
-            }
-            if (frame.Substring(lineLength - 4, 2) != CalculateChecksum(frame.Substring(1, lineLength - 5)))
-            {
+                _logger.Error($"CHECKSUM MISMATCH: Received:{receivedCheckSum} | Calculated: {calculatedCheckSum}");
                 return result;
             }
             result = true;
@@ -309,15 +315,15 @@ namespace SwatInc.Lis.Lis01A2.Services
 
         private void SendEndFrame(int frameNumber, string frame)
         {
-            _logger.LogInformation($"{frameNumber}{frame}");
-            _logger.LogDebug("send <ETX>");
+            _logger.Info($"{frameNumber}{frame}");
+            _logger.Debug("send <ETX>");
             SendString($"{frameNumber}{frame}{ETX}");
         }
 
         private void SendIntermediateFrame(int frameNumber, string frame)
         {
-           _logger.LogInformation($"{frameNumber}{frame}");
-           _logger.LogDebug("send <ETB>");
+           _logger.Info($"{frameNumber}{frame}");
+           _logger.Debug("send <ETB>");
            SendString($"{frameNumber}{frame}{ETB}");
         }
 
@@ -325,7 +331,7 @@ namespace SwatInc.Lis.Lis01A2.Services
         {
             if (Status != LisConnectionStatus.Sending)
             {
-                _logger.LogError("Connection not in Send mode when trying to send data.");
+                _logger.Error("Connection not in Send mode when trying to send data.");
                 throw new Lis01A2ConnectionException("Connection not in Send mode when trying to send data.");
             }
             Connection.ClearBuffers();
@@ -338,7 +344,7 @@ namespace SwatInc.Lis.Lis01A2.Services
                 if (tryCounter > 5)
                 {
                     StopSendMode();
-                    _logger.LogError("Max number of send retries reached.");
+                    _logger.Error("Max number of send retries reached.");
                     throw new Lis01A2ConnectionException("Max number of send retries reached.");
                 }
                 Connection.WriteData(tempSendString);
@@ -350,10 +356,10 @@ namespace SwatInc.Lis.Lis01A2.Services
             if (!_ackWaitObject.WaitOne(15000))
             {
                 StopSendMode();
-                _logger.LogError("No response from LIS within timeout period.");
+                _logger.Error("No response from LIS within timeout period.");
                 throw new Lis01A2ConnectionException("No response from LIS within timeout period.");
             }
-            _logger.LogDebug("Received <ACK>");
+            _logger.Debug("Received <ACK>");
             return _ackReceived;
         }
         #endregion
@@ -362,13 +368,13 @@ namespace SwatInc.Lis.Lis01A2.Services
         {
             try
             {
-                _logger.LogInformation("\nConnecting To LIS...");
+                _logger.Info("\nConnecting To LIS...");
                 Connection.Connect();
-                _logger.LogInformation("Connected");
+                _logger.Info("Connected");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error Opening Connection\n{ex.Message}");
+                _logger.Error($"Error Opening Connection\n{ex.Message}");
                 throw new Lis01A2ConnectionException("Error opening Connection.", ex);
             }
         }
@@ -382,15 +388,15 @@ namespace SwatInc.Lis.Lis01A2.Services
             }
             try
             {
-                _logger.LogInformation("Disconnecting...");
+                _logger.Info("Disconnecting...");
                 Connection.DisConnect();
                 Status = LisConnectionStatus.Idle;
-                _logger.LogInformation("Disconnected");
+                _logger.Info("Disconnected");
                 OnLISConnectionClosed?.Invoke(this, new EventArgs());
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error Closing Connection\n{ex.Message}");
+                _logger.Error($"Error Closing Connection\n{ex.Message}");
                 throw new Lis01A2ConnectionException("Error closing Connection.", ex);
             }
         }
@@ -423,15 +429,15 @@ namespace SwatInc.Lis.Lis01A2.Services
             _frameNumber = 1;
             if (Status != LisConnectionStatus.Idle)
             {
-                _logger.LogError("Connection not idle when trying to establish send mode");
+                _logger.Error("Connection not idle when trying to establish send mode");
                 throw new Lis01A2ConnectionException("Connection not idle when trying to establish send mode");
             }
             Status = LisConnectionStatus.Establishing;
-            _logger.LogInformation("Establishing send mode");
+            _logger.Info("Establishing send mode");
             Connection.ClearBuffers();
             _enqWaitObject.Reset();
             Connection.WriteData($"{ENQ}");
-            _logger.LogDebug("send <ENQ>");
+            _logger.Debug("send <ENQ>");
             _enqWaitObject.WaitOne(15000, false);
             if (Status == LisConnectionStatus.Sending)
             {
@@ -471,7 +477,7 @@ namespace SwatInc.Lis.Lis01A2.Services
         public void StopSendMode()
         {
            Connection.WriteData($"{EOT}");
-           _logger.LogDebug("send <EOT>");
+           _logger.Debug("send <EOT>");
            Status = LisConnectionStatus.Idle;
         }
     }
