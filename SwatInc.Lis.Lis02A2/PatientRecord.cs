@@ -5,134 +5,34 @@ namespace SwatInc.Lis.Lis02A2
 {
 	public class PatientRecord : AbstractLisRecord
 	{
-		[CompilerGenerated]
-		private int @_SequenceNumber;
-
-		[CompilerGenerated]
-		private string @_PracticeAssignedPatientID;
-
-		[CompilerGenerated]
-		private string @_LaboratoryAssignedPatientID;
-
-		[CompilerGenerated]
-		private string @_PatientID3;
-
-		[CompilerGenerated]
-		private PatientName @_PatientName;
-
-		[CompilerGenerated]
-		private DateTime? @_Birthdate = null;
-
-		[CompilerGenerated]
-		private PatientSex? @_PatientSex = null;
-
-		[CompilerGenerated]
-		private string @_AttendingPhysicianID;
 
 		[LisRecordField(2)]
-		public int SequenceNumber
-		{
-			get
-			{
-				return @_SequenceNumber;
-			}
-			set
-			{
-				@_SequenceNumber = value;
-			}
-		}
+		public int SequenceNumber { get; set; }
 
 		[LisRecordField(3)]
-		public string PracticeAssignedPatientID
-		{
-			get
-			{
-				return @_PracticeAssignedPatientID;
-			}
-			set
-			{
-				@_PracticeAssignedPatientID = value;
-			}
-		}
+		public string PracticeAssignedPatientID { get; set; }
 
 		[LisRecordField(4)]
-		public string LaboratoryAssignedPatientID
-		{
-			get
-			{
-				return @_LaboratoryAssignedPatientID;
-			}
-			set
-			{
-				@_LaboratoryAssignedPatientID = value;
-			}
-		}
+		public string LaboratoryAssignedPatientID { get; set; }
 
 		[LisRecordField(5)]
-		public string PatientID3
-		{
-			get
-			{
-				return @_PatientID3;
-			}
-			set
-			{
-				@_PatientID3 = value;
-			}
-		}
+		public string PatientID3 { get; set; }
 
 		[LisRecordField(6)]
-		public PatientName PatientName
-		{
-			get
-			{
-				return @_PatientName;
-			}
-			set
-			{
-				@_PatientName = value;
-			}
-		}
+		public PatientName PatientName { get; set; }
+
+		[LisRecordField(7)]
+		public PatientName MothersMaidenName { get; set; }
 
 		[LisDateTimeUsage(LisDateTimeUsage.Date)]
 		[LisRecordField(8)]
-		public DateTime? Birthdate
-		{
-			get
-			{
-				return @_Birthdate;
-			}
-			set
-			{
-				@_Birthdate = value;
-			}
-		}
+		public DateTime? Birthdate { get; set; } = null;
 
 		[LisRecordField(9)]
-		public PatientSex? PatientSex
-		{
-			get
-			{
-				return @_PatientSex;
-			}
-			set
-			{
-				@_PatientSex = value;
-			}
-		}
+		public PatientSex? PatientSex { get; set; } = null;
 
 		[LisRecordField(14)]
-		public string AttendingPhysicianID
-		{
-			get
-			{
-				return @_AttendingPhysicianID;
-			}
-			set
-			{
-				@_AttendingPhysicianID = value;
-			}
-		}
+		public string AttendingPhysicianID { get; set; }
 
 		public override string ToLISString()
 		{
