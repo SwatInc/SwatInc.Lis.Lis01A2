@@ -1,0 +1,31 @@
+namespace SwatInc.Lis.Lis02A2
+{
+	public enum ResultAbnormalFlags
+	{
+		None,
+		[LisEnum("L")]
+		BelowLowNormal,
+		[LisEnum("H")]
+		AboveHighNormal,
+		[LisEnum("LL")]
+		BelowPanicNormal,
+		[LisEnum("HH")]
+		AbovePanicHigh,
+		[LisEnum("<")]
+		BelowAbsolutelow,
+		[LisEnum(">")]
+		AboveAbsoluteHigh,
+		[LisEnum("N")]
+		Normal,
+		[LisEnum("A")]
+		Abnormal,
+		[LisEnum("U")]
+		SignificantChangeUp,
+		[LisEnum("D")]
+		SignificantChangeDown,
+		[LisEnum("B")]
+		Better,
+		[LisEnum("W")]
+		Worse
+	}
+}
