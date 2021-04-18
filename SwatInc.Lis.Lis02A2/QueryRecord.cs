@@ -11,13 +11,9 @@ namespace SwatInc.Lis.Lis02A2
 		[LisRecordField(3)]
 		public StartingRange StartingRange { get; set; }
 
-		[LisRecordField(4)]
-		public StartingRange EndingRange { get; set; }
-
-		[LisRecordField(5)]
-		public UniversalTestID UniversalTestID { get; set; }
-
-		public override string ToLISString()
+		[LisRecordField(13)]
+		public string RequestInformationStatusCode { get; private set; } = "N";
+        public override string ToLISString()
 		{
 			return "Q" + new string(LISDelimiters.FieldDelimiter, 1) + base.ToLISString();
 		}

@@ -18,28 +18,8 @@ namespace SwatInc.Lis.Lis02A2
 		[LisRecordField(5)]
 		public string Units { get; set; }
 
-		[LisRecordField(6)]
-		public string ReferenceRanges { get; set; }
-
 		[LisRecordField(7)]
 		public ResultAbnormalFlags ResultAbnormalFlag { get; set; }
-
-		[LisRecordField(8)]
-		public ResultNatureOfAbnormalityTestingSet NatureOfAbnormalityTesting { get; set; }
-
-		[LisRecordField(9)]
-		public ResultStatus ResultStatus { get; set; }
-
-		[LisRecordField(11)]
-        public string OperatorIdentification { get; set; }
-
-		[LisDateTimeUsage(LisDateTimeUsage.DateTime)]
-		[LisRecordField(12)]
-        public DateTime? TestStartedDateTime{ get; set; }
-
-		[LisDateTimeUsage(LisDateTimeUsage.DateTime)]
-		[LisRecordField(13)]
-		public DateTime? TestCompletedDateTime { get; set; }
 
 		public override string ToLISString()
 		{

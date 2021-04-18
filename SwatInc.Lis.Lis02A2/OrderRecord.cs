@@ -11,12 +11,6 @@ namespace SwatInc.Lis.Lis02A2
 		[LisRecordField(3)]
 		public string SpecimenID { get; set; }
 
-//8.4.4 Instrument Specimen ID
-//This text field shall represent a unique identifier assigned by the instrument, if different from the
-//information system identifier, and returned with results for use in referring to any results.
-		[LisRecordField(4)]
-		public string InstrumentSpecimenID { get; set; }
-
 		[LisRecordField(5)]
 		public UniversalTestID TestID { get; set; }
 
@@ -39,14 +33,6 @@ namespace SwatInc.Lis.Lis02A2
 		[LisDateTimeUsage(LisDateTimeUsage.DateTime)]
 		[LisRecordField(9)]
 		public DateTime? CollectionEndDateTime { get; set; }
-
-
-
-        [LisRecordField(12)]
-		public OrderActionCode ActionCode { get; set; }
-
-		[LisRecordField(26)]
-		public OrderReportType ReportType { get; set; }
 
 		public override string ToLISString()
 		{

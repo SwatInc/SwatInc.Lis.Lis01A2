@@ -12,17 +12,8 @@ namespace SwatInc.Lis.Lis02A2
 		[LisRecordField(3)]
 		public string PracticeAssignedPatientID { get; set; }
 
-		[LisRecordField(4)]
-		public string LaboratoryAssignedPatientID { get; set; }
-
-		[LisRecordField(5)]
-		public string PatientID3 { get; set; }
-
 		[LisRecordField(6)]
 		public PatientName PatientName { get; set; }
-
-		[LisRecordField(7)]
-		public PatientName MothersMaidenName { get; set; }
 
 		[LisDateTimeUsage(LisDateTimeUsage.Date)]
 		[LisRecordField(8)]
