@@ -21,6 +21,9 @@ namespace SwatInc.Lis.Lis02A2
 		[LisRecordField(7)]
 		public ResultAbnormalFlags ResultAbnormalFlag { get; set; }
 
+		[LisDateTimeUsage(LisDateTimeUsage.DateTime)]
+		[LisRecordField(13)]
+		public DateTime? TestCompletedDateTime { get; set; }
 		public override string ToLISString()
 		{
 			return "R" + new string(LISDelimiters.FieldDelimiter, 1) + base.ToLISString();
