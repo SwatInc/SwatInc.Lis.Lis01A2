@@ -27,7 +27,6 @@ namespace SwatInc.Lis.Lis01A2.Services
 
         private ILis01A2Connection _connection;
         private readonly StringBuilder _tempReceiveBuffer = new StringBuilder();
-        private string _tempIntermediateFrameBuffer;
 
         private readonly EventWaitHandle _enqWaitObject = new EventWaitHandle(true, EventResetMode.ManualReset);
         private readonly EventWaitHandle _ackWaitObject = new EventWaitHandle(true, EventResetMode.ManualReset);
@@ -35,7 +34,6 @@ namespace SwatInc.Lis.Lis01A2.Services
         private bool _ackReceived;
         private readonly System.Timers.Timer _receiveTimeOutTimer = new System.Timers.Timer();
         private int _frameNumber;
-        private bool _lastFrameWasIntermediate;
         protected internal bool _isDisposed;
 
         #endregion
@@ -83,6 +81,7 @@ namespace SwatInc.Lis.Lis01A2.Services
         {
 
             string buffer = e.ReceivedData;
+            buffer = CelltacGMek9100SpecificPreprocessing(buffer);
             if (buffer != null)
             {
                 CharEnumerator enumerator = buffer.GetEnumerator();
@@ -93,134 +92,23 @@ namespace SwatInc.Lis.Lis01A2.Services
                         while (enumerator.MoveNext())
                         {
                             char currentCharacter = enumerator.Current;
-                            switch (Status)
+
+                            if (currentCharacter != NUL)
                             {
-                                case LisConnectionStatus.Idle:
-                                    {
-                                        if (currentCharacter != ENQ)
-                                        {
-                                            _logger.Debug("send <NAK>");
-                                            Connection.WriteData($"{NAK}");
-                                        }
-                                        else
-                                        {
-                                            _logger.Debug("received <ENQ>");
-                                            Connection.WriteData($"{ACK}");
-                                            _logger.Debug("send <ACK>");
-                                            Status = LisConnectionStatus.Receiving;
-                                            _eotWaitObject.Reset();
-                                            _tempReceiveBuffer.Clear();
-                                            _tempIntermediateFrameBuffer = string.Empty;
-                                            _receiveTimeOutTimer.Enabled = true;
-                                        }
-                                        continue;
-                                    }
-                                case LisConnectionStatus.Sending:
-                                    {
-                                        _ackReceived = currentCharacter == ACK;
-                                        _ackWaitObject.Set();
-                                        continue;
-                                    }
-                                case LisConnectionStatus.Receiving:
-                                    {
-                                        _receiveTimeOutTimer.Stop();
-                                        _receiveTimeOutTimer.Start();
-                                        if (currentCharacter == ENQ)
-                                        {
-                                            _logger.Debug("received <ENQ>");
-                                            Connection.WriteData($"{NAK}");
-                                            _logger.Debug("send <NAK>");
-                                            return;
-                                        }
-                                        else if (currentCharacter != EOT)
-                                        {
-                                            if (currentCharacter != NUL)
-                                            {
-                                                _tempReceiveBuffer.Append(currentCharacter);
-                                            }
-                                            if (currentCharacter == LF)
-                                            {
-                                                string tempReceiveBuffer = _tempReceiveBuffer.ToString();
-                                                if (!CheckChecksum(tempReceiveBuffer))
-                                                {
-                                                    _logger.Error($"CHECKSUM INVALID. FRAME: {_tempIntermediateFrameBuffer}");
-                                                    _logger.Debug("send <NAK>");
-                                                    Connection.WriteData($"{NAK}");
-                                                    _tempReceiveBuffer.Clear();
-                                                }
-                                                else
-                                                {
-                                                    _logger.Debug("send <ACK>");
-                                                    Connection.WriteData($"{ACK}");
-                                                    string cleanReceiveBuffer = tempReceiveBuffer.Substring(2, tempReceiveBuffer.Length - 7);
-                                                    if (_lastFrameWasIntermediate)
-                                                    {
-                                                        _tempIntermediateFrameBuffer = $"{_tempIntermediateFrameBuffer}{cleanReceiveBuffer}";
-                                                    }
-                                                    else if (OnReceiveString != null)
-                                                    {
-                                                        string frame = string.Concat(_tempIntermediateFrameBuffer, cleanReceiveBuffer);
-                                                        OnReceiveString?.Invoke(this, new LISConnectionReceivedDataEventArgs(frame));
-                                                        _logger.Info(string.Concat("received: ", frame));
-                                                    }
-                                                    _tempReceiveBuffer.Clear();
-                                                    _tempIntermediateFrameBuffer = string.Empty;
-                                                }
-                                            }
-                                            continue;
-                                        }
-                                        else
-                                        {
-                                            _receiveTimeOutTimer.Stop();
-                                            _logger.Debug("received <EOT>");
-                                            Status = LisConnectionStatus.Idle;
-                                            _eotWaitObject.Set();
-                                            return;
-                                        }
-                                    }
-                                case LisConnectionStatus.Establishing:
-                                    {
-                                        if (currentCharacter == ACK)
-                                        {
-                                            _logger.Debug("received <ACK>");
-                                            Status = LisConnectionStatus.Sending;
-                                            _enqWaitObject.Set();
-                                            return;
-                                        }
-                                        else if (currentCharacter != ENQ)
-                                        {
-                                            continue;
-                                        }
-                                        else
-                                        {
-                                            _logger.Debug("received <ENQ>");
-                                            Thread.Sleep(1000);
-                                            _logger.Debug("send <ENQ>");
-                                            Connection.WriteData($"{ENQ}");
-                                            return;
-                                        }
-                                    }
-                                default:
-                                    {
-                                        if (Status == LisConnectionStatus.Idle)
-                                        {
-                                            goto case LisConnectionStatus.Idle;
-                                        }
-                                        if (Status == LisConnectionStatus.Establishing)
-                                        {
-                                            goto case LisConnectionStatus.Establishing;
-                                        }
-                                        if (Status == LisConnectionStatus.Sending)
-                                        {
-                                            goto case LisConnectionStatus.Sending;
-                                        }
-                                        if (Status == LisConnectionStatus.Receiving)
-                                        {
-                                            goto case LisConnectionStatus.Receiving;
-                                        }
-                                        continue;
-                                    }
+                                _tempReceiveBuffer.Append(currentCharacter);
                             }
+                            if (currentCharacter == LF)
+                            {
+                                string tempReceiveBuffer = _tempReceiveBuffer.ToString();
+
+                                string cleanReceiveBuffer = tempReceiveBuffer.Substring(2, tempReceiveBuffer.Length - 7);
+                                string frame = cleanReceiveBuffer;
+
+                                OnReceiveString?.Invoke(this, new LISConnectionReceivedDataEventArgs(frame));
+                                _logger.Info(string.Concat("received: ", frame));
+                                _tempReceiveBuffer.Clear();
+                            }
+                            continue;
                         }
                     }
                     finally
@@ -229,6 +117,18 @@ namespace SwatInc.Lis.Lis01A2.Services
                     }
                 }
             }
+        }
+
+        private string CelltacGMek9100SpecificPreprocessing(string buffer)
+        {
+            //Celltac MEK-9100 specific preprocessing
+            return buffer
+                .Replace(".O", "\r\nO")
+                .Replace(".C", "\r\nC")
+                .Replace(".R", "\r\nR")
+                .Replace(".L", "\r\nL")
+                .Replace("L|1.", "L|1\r\n");
+
         }
 
         private void ReceiveTimeOutTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -262,56 +162,6 @@ namespace SwatInc.Lis.Lis01A2.Services
             return ((byte)(total % 256)).ToString("X2", CultureInfo.InvariantCulture);
         }
 
-        /// <summary>
-        /// determine whether to calculate checksum and verifies checksum if required.
-        /// </summary>
-        /// <param name="frame">The ASTM frame to determine to and verify checksum</param>
-        /// <returns>true when checksum is required and verified. False otherwise</returns>
-        private bool CheckChecksum(string frame)
-        {
-            bool result = false;
-            int lineLength = frame.Length;
-            if (lineLength < 5)
-            {
-                return result;
-            }
-            if (frame[0] != STX)
-            {
-                return result;
-            }
-            if (frame[lineLength - 1] != LF)
-            {
-                return result;
-            }
-            if (frame[lineLength - 2] != CR)
-            {
-                return result;
-            }
-
-
-            char etxOrEtb = frame[lineLength - 5];
-            if ((etxOrEtb == ETX ? false : etxOrEtb != ETB))
-            {
-                return result;
-            }
-            _lastFrameWasIntermediate = etxOrEtb == ETB;
-
-            if (frame[lineLength - 6] != CR)
-            {
-                return result;
-            }
-
-            var calculatedCheckSum = CalculateChecksum(frame.Substring(1, lineLength - 5));
-            var receivedCheckSum = frame.Substring(lineLength - 4, 2);
-            if (receivedCheckSum != calculatedCheckSum)
-            {
-                _logger.Error($"CHECKSUM MISMATCH: Received:{receivedCheckSum} | Calculated: {calculatedCheckSum}");
-                return result;
-            }
-            result = true;
-            return result;
-        }
-
         private void SendEndFrame(int frameNumber, string frame)
         {
             _logger.Info($"{frameNumber}{frame}");
@@ -321,9 +171,9 @@ namespace SwatInc.Lis.Lis01A2.Services
 
         private void SendIntermediateFrame(int frameNumber, string frame)
         {
-           _logger.Info($"{frameNumber}{frame}");
-           _logger.Debug("send <ETB>");
-           SendString($"{frameNumber}{frame}{ETB}");
+            _logger.Info($"{frameNumber}{frame}");
+            _logger.Debug("send <ETB>");
+            SendString($"{frameNumber}{frame}{ETB}");
         }
 
         private void SendString(string frame)
@@ -475,9 +325,9 @@ namespace SwatInc.Lis.Lis01A2.Services
 
         public void StopSendMode()
         {
-           Connection.WriteData($"{EOT}");
-           _logger.Debug("send <EOT>");
-           Status = LisConnectionStatus.Idle;
+            Connection.WriteData($"{EOT}");
+            _logger.Debug("send <EOT>");
+            Status = LisConnectionStatus.Idle;
         }
     }
 }
