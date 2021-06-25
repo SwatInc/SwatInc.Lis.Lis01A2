@@ -6,6 +6,12 @@ The two libraries in this repo are C# implementations of the same from [Essy.LIS
 
 ## Instructions For Use
 
+### Add these namespaces to your code
+```C#
+using SwatInc.Lis.Lis01A2.Interfaces;
+using SwatInc.Lis.Lis01A2.Services;
+using SwatInc.Lis.Lis02A2;
+```
 
 ### TCP/IP
 ```C#
