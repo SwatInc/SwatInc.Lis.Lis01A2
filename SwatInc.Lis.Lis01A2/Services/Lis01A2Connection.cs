@@ -79,7 +79,7 @@ namespace SwatInc.Lis.Lis01A2.Services
         #region Private Methods
         private void ConnectionDataReceived(object sender, LISConnectionReceivedDataEventArgs e)
         {
-
+            _logger.Debug("ConnectionDataReceived triggered with data\n" + e.ReceivedData);
             string buffer = e.ReceivedData;
             buffer = CelltacGMek9100SpecificPreprocessing(buffer);
             if (buffer != null)
@@ -101,7 +101,7 @@ namespace SwatInc.Lis.Lis01A2.Services
                             {
                                 string tempReceiveBuffer = _tempReceiveBuffer.ToString();
 
-                                string cleanReceiveBuffer = tempReceiveBuffer.Substring(2, tempReceiveBuffer.Length - 7);
+                                string cleanReceiveBuffer = tempReceiveBuffer;
                                 string frame = cleanReceiveBuffer;
 
                                 OnReceiveString?.Invoke(this, new LISConnectionReceivedDataEventArgs(frame));
@@ -123,6 +123,8 @@ namespace SwatInc.Lis.Lis01A2.Services
         {
             //Celltac MEK-9100 specific preprocessing
             return buffer
+                .Replace("\r\n",".")
+                .Replace("\r",".")
                 .Replace(".O", "\r\nO")
                 .Replace(".C", "\r\nC")
                 .Replace(".R", "\r\nR")

@@ -83,6 +83,7 @@ namespace SwatInc.Lis.Lis01A2.Services
 
         public async Task StartListeningAsync()
         {
+            _logger.Debug($"Starting Listener on {NetWorkAddress}:{NetWorkPort}");
             await Task.Run(() =>
             {
                 _isInServerMode = true;
@@ -99,6 +100,7 @@ namespace SwatInc.Lis.Lis01A2.Services
                     for (int i = stream.Read(bytes, 0, bytes.Length); i != 0; i = stream.Read(bytes, 0, bytes.Length))
                     {
                         data = Encoding.UTF8.GetString(bytes, 0, i);
+                        _logger.Debug($"Received Data: \n{data}");
                         OnReceiveString?.Invoke(this, new LISConnectionReceivedDataEventArgs(data));
                     }
                     _client.Close();
