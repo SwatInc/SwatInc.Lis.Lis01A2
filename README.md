@@ -1,4 +1,6 @@
 # Tested With the following analysers
+Note that each branch in this repository is actually a main brach with specific changes for specific analysers. The master branch is the generic one which will try to adhere with the LIS2-A2 standard.
+
 - CelltacG-MEK-9100
 - EvidenceInvestigator-RandoxLaboratories
 - RX_Daytona+
