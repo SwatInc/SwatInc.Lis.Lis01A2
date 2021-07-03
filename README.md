@@ -1,3 +1,8 @@
+# Tested With the following analysers
+- CelltacG-MEK-9100
+- EvidenceInvestigator-RandoxLaboratories
+- RX_Daytona+
+
 # SwatInc.Lis.Lis01A2
 This library is an OO implementation of the CLSI LIS01-A2 standard. Specification for Low-Level Protocol to Transfer Messages Between Clinical Laboratory Instruments and 
 Computer Systems.
