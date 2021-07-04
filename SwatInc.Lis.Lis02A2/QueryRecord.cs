@@ -17,7 +17,10 @@ namespace SwatInc.Lis.Lis02A2
 		[LisRecordField(5)]
 		public UniversalTestID UniversalTestID { get; set; }
 
-		public override string ToLISString()
+		[LisRecordField(12)]
+        public string UserFieldNumberTwo { get; set; }
+
+        public override string ToLISString()
 		{
 			return "Q" + new string(LISDelimiters.FieldDelimiter, 1) + base.ToLISString();
 		}
