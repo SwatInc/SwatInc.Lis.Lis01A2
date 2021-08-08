@@ -449,7 +449,6 @@ namespace SwatInc.Lis.Lis01A2.Services
             _enqWaitObject.WaitOne(15000, false);
             if (Status != LisConnectionStatus.Sending)
             {
-                return result;
                 try
                 {
                     StopSendMode();
