@@ -33,7 +33,7 @@ namespace SwatInc.Lis.Lis01A2.Services
         public ushort NetWorkPort { get; set; }
         public void ClearBuffers()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void Connect()

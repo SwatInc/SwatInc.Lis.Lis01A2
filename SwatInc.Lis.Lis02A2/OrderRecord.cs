@@ -34,6 +34,9 @@ namespace SwatInc.Lis.Lis02A2
 		[LisRecordField(9)]
 		public DateTime? CollectionEndDateTime { get; set; }
 
+		[LisRecordField(26)]
+		public OrderReportType ReportType { get; set; }
+
 		public override string ToLISString()
 		{
 			return "O" + new string(LISDelimiters.FieldDelimiter, 1) + base.ToLISString();
