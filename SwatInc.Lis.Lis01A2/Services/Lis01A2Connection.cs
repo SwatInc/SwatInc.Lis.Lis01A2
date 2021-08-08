@@ -323,9 +323,9 @@ namespace SwatInc.Lis.Lis01A2.Services
 
         private void SendIntermediateFrame(int frameNumber, string frame)
         {
-           _logger.Info($"{frameNumber}{frame}");
-           _logger.Debug("send <ETB>");
-           SendString($"{frameNumber}{frame}{ETB}");
+            _logger.Info($"{frameNumber}{frame}");
+            _logger.Debug("send <ETB>");
+            SendString($"{frameNumber}{frame}{ETB}");
         }
 
         private void SendString(string frame)
@@ -337,7 +337,7 @@ namespace SwatInc.Lis.Lis01A2.Services
             }
             Connection.ClearBuffers();
             int tryCounter = 0;
-            string tempSendString = $"{STX}{_frameNumber}{CalculateChecksum(frame)}{CR}{LF}";
+            string tempSendString = $"{STX}{frame}{CalculateChecksum(frame)}{CR}{LF}";
             Connection.WriteData(tempSendString);
             while (!WaitForACK())
             {
@@ -437,14 +437,32 @@ namespace SwatInc.Lis.Lis01A2.Services
             _logger.Info("Establishing send mode");
             Connection.ClearBuffers();
             _enqWaitObject.Reset();
-            Connection.WriteData($"{ENQ}");
+            try
+            {
+                Connection.WriteData($"{ENQ}");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Cannot establish send mode.");
+                _logger.Error($"{ex.Message}\n{ex.StackTrace}");
+
+            }
+
             _logger.Debug("send <ENQ>");
             _enqWaitObject.WaitOne(15000, false);
-            if (Status == LisConnectionStatus.Sending)
+            if (Status != LisConnectionStatus.Sending) 
             {
-                return result;
+                try
+                {
+                    StopSendMode();
+                    _logger.Info("<ENQ> timed out. Set connection to idle.");
+                }
+                catch (Exception)
+                {
+                    if (Status != LisConnectionStatus.Sending) { Status = LisConnectionStatus.Idle; }
+                }
             }
-            StopSendMode();
+            if (Status == LisConnectionStatus.Sending) { return result; }
             return false;
         }
 
@@ -477,9 +495,9 @@ namespace SwatInc.Lis.Lis01A2.Services
 
         public void StopSendMode()
         {
-           Connection.WriteData($"{EOT}");
-           _logger.Debug("send <EOT>");
-           Status = LisConnectionStatus.Idle;
+            Connection.WriteData($"{EOT}");
+            _logger.Debug("send <EOT>");
+            Status = LisConnectionStatus.Idle;
         }
     }
 }
