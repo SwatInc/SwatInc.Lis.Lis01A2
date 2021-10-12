@@ -10,10 +10,10 @@ namespace SwatInc.Lis.Lis02A2
 		public int SequenceNumber { get; set; }
 
 		[LisRecordField(3)]
-		public string PracticeAssignedPatientID { get; set; }
+		public string PracticeAssignedPatientId { get; set; }
 
 		[LisRecordField(4)]
-		public string LaboratoryAssignedPatientID { get; set; }
+		public string LaboratoryAssignedPatientId { get; set; }
 
 		[LisRecordField(5)]
 		public string PatientID3 { get; set; }
