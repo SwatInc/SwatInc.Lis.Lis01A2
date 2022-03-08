@@ -156,6 +156,7 @@ namespace SwatInc.Lis.Lis01A2.Services
                                                     if (_lastFrameWasIntermediate)
                                                     {
                                                         _tempIntermediateFrameBuffer = $"{_tempIntermediateFrameBuffer}{cleanReceiveBuffer}";
+                                                        continue;
                                                     }
                                                     else if (OnReceiveString != null)
                                                     {
