@@ -19,10 +19,10 @@ namespace SwatInc.Lis.Lis02A2
 		public string PatientID3 { get; set; }
 
 		[LisRecordField(6)]
-		public PatientName PatientName { get; set; }
+		public PatientName PatientName { get; set; } = new PatientName();
 
 		[LisRecordField(7)]
-		public PatientName MothersMaidenName { get; set; }
+		public PatientName MothersMaidenName { get; set; } = new PatientName();
 
 		[LisDateTimeUsage(LisDateTimeUsage.Date)]
 		[LisRecordField(8)]

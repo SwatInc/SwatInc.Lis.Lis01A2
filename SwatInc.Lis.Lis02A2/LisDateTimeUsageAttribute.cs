@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace SwatInc.Lis.Lis02A2
 {
 	[AttributeUsage(AttributeTargets.Property)]
-	internal class LisDateTimeUsageAttribute : Attribute
+	public class LisDateTimeUsageAttribute : Attribute
 	{
 		public LisDateTimeUsage DateTimeUsage { get; set; }
 

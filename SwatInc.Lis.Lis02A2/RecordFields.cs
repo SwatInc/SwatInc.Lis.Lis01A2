@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace SwatInc.Lis.Lis02A2
 {
-	internal class RecordFields
+	public class RecordFields
 	{
 		private string[] fItems;
 

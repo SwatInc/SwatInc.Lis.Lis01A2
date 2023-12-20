@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace SwatInc.Lis.Lis02A2
 {
 	[AttributeUsage(AttributeTargets.Property)]
-	internal class LisRecordFieldAttribute : Attribute
+	public class LisRecordFieldAttribute : Attribute
 	{
 		[CompilerGenerated]
 		private int @_FieldIndex;
