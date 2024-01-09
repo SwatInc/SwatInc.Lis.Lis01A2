@@ -102,7 +102,32 @@ namespace SwatInc.Lis.Lis02A2
 			}
 		}
 
-		private void ParseReceivedRecord(string aReceivedRecordString)
+		public virtual AbstractLisRecord CreateHeaderRecord(string aLisString)
+		{
+			return new HeaderRecord(aLisString);
+		}
+
+        public virtual AbstractLisRecord CreatePatientRecord(string aLisString)
+        {
+            return new PatientRecord(aLisString);
+        }
+
+        public virtual AbstractLisRecord CreateOrderRecord(string aLisString)
+        {
+            return new OrderRecord(aLisString);
+        }
+
+        public virtual AbstractLisRecord CreateResultRecord(string aLisString)
+        {
+            return new ResultRecord(aLisString);
+        }
+
+		public virtual AbstractLisRecord CreateQueryRecord(string aLisString)
+		{
+            return new QueryRecord(aLisString);
+        }
+
+        private void ParseReceivedRecord(string aReceivedRecordString)
 		{
 			fLog.Trace(aReceivedRecordString);
 			ReceiveRecordEventArgs tempArgs = new ReceiveRecordEventArgs();
@@ -138,29 +163,29 @@ namespace SwatInc.Lis.Lis02A2
 					}
 					goto case 'Q';
 				}
-				tempArgs.ReceivedRecord = new HeaderRecord(aReceivedRecordString);
+				tempArgs.ReceivedRecord = CreateHeaderRecord(aReceivedRecordString);
 				tempArgs.RecordType = LisRecordType.Header;
 				fOnReceivedRecord(this, tempArgs);
 				return;
 			case 'P':
-				tempArgs.ReceivedRecord = new PatientRecord(aReceivedRecordString);
+				tempArgs.ReceivedRecord = CreatePatientRecord(aReceivedRecordString);
 				tempArgs.RecordType = LisRecordType.Patient;
 				fOnReceivedRecord(this, tempArgs);
 				return;
 			case 'O':
-				tempArgs.ReceivedRecord = new OrderRecord(aReceivedRecordString);
+				tempArgs.ReceivedRecord = CreateOrderRecord(aReceivedRecordString);
 				tempArgs.RecordType = LisRecordType.Order;
 				fOnReceivedRecord(this, tempArgs);
 				return;
 			case 'Q':
-				tempArgs.ReceivedRecord = new QueryRecord(aReceivedRecordString);
+					tempArgs.ReceivedRecord = CreateQueryRecord(aReceivedRecordString);
 				tempArgs.RecordType = LisRecordType.Query;
 				fOnReceivedRecord(this, tempArgs);
 				return;
 			case 'R':
 				break;
 			}
-			tempArgs.ReceivedRecord = new ResultRecord(aReceivedRecordString);
+			tempArgs.ReceivedRecord = CreateResultRecord(aReceivedRecordString);
 			tempArgs.RecordType = LisRecordType.Result;
 			fOnReceivedRecord(this, tempArgs);
 		}
