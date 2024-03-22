@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31112.23
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwatInc.Lis.Lis01A2", "SwatInc.Lis.Lis01A2\SwatInc.Lis.Lis01A2.csproj", "{675316F7-B4E7-4B5E-A09A-D9D8D1B20D8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SwatInc.Lis.Lis01A2", "SwatInc.Lis.Lis01A2\SwatInc.Lis.Lis01A2.csproj", "{675316F7-B4E7-4B5E-A09A-D9D8D1B20D8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwatInc.Lis.Lis02A2", "SwatInc.Lis.Lis02A2\SwatInc.Lis.Lis02A2.csproj", "{CCE41B97-1FB9-4986-8C06-2A2999FC2C02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SwatInc.Lis.Lis02A2", "SwatInc.Lis.Lis02A2\SwatInc.Lis.Lis02A2.csproj", "{CCE41B97-1FB9-4986-8C06-2A2999FC2C02}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{4069DD30-702D-4AA1-B936-8EB95B8825F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{CCE41B97-1FB9-4986-8C06-2A2999FC2C02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCE41B97-1FB9-4986-8C06-2A2999FC2C02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCE41B97-1FB9-4986-8C06-2A2999FC2C02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4069DD30-702D-4AA1-B936-8EB95B8825F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4069DD30-702D-4AA1-B936-8EB95B8825F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4069DD30-702D-4AA1-B936-8EB95B8825F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4069DD30-702D-4AA1-B936-8EB95B8825F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

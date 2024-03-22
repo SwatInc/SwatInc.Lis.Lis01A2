@@ -1,6 +1,6 @@
 namespace SwatInc.Lis.Lis02A2
 {
-	internal enum LisDateTimeUsage
+	public enum LisDateTimeUsage
 	{
 		DateTime,
 		Date,

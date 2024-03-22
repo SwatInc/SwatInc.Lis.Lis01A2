@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace SwatInc.Lis.Lis02A2
 {
 	[AttributeUsage(AttributeTargets.Field)]
-	internal class LisEnumAttribute : Attribute
+	public class LisEnumAttribute : Attribute
 	{
 
 		public string LisID { get; set; }

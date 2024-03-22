@@ -2,14 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using slf4net;
 
 namespace SwatInc.Lis.Lis02A2
 {
 	public abstract class AbstractLisRecord
 	{
+        private ILogger fLog;
 		protected const char CR = '\r';
 
-		private AbstractLisSubRecord fCreateSubrecord(string aString, Type aType)
+        private AbstractLisSubRecord fCreateSubrecord(string aString, Type aType)
 		{
 			return (AbstractLisSubRecord)Activator.CreateInstance(aType, aString);
 		}
@@ -321,9 +323,10 @@ namespace SwatInc.Lis.Lis02A2
 			return sb.ToString();
 		}
 
-		public AbstractLisRecord(string aLisString)
+		public AbstractLisRecord(string aLisString) : base()
 		{
-			bool isSubRecord = this is AbstractLisSubRecord;
+            fLog = LoggerFactory.GetLogger(typeof(AbstractLisRecord));
+            bool isSubRecord = this is AbstractLisSubRecord;
 			char sepChar = ((!isSubRecord) ? LISDelimiters.FieldDelimiter : LISDelimiters.ComponentDelimiter);
 			Type selfType = this?.GetType();
 			PropertyInfo[] props = selfType.GetProperties();
@@ -359,52 +362,68 @@ namespace SwatInc.Lis.Lis02A2
 				{
 					propType = nullablePropType;
 				}
-				if (!(propType == typeof(int)))
+				try
 				{
-					if (!(propType == typeof(string)))
+					if(!(propType == typeof(int)))
 					{
-						if (propType == typeof(DateTime))
+						if(!(propType == typeof(string)))
 						{
-							LisDateTimeUsage dateTimeUsage = LisDateTimeUsage.DateTime;
-							attribs = prop.GetCustomAttributes(typeof(LisDateTimeUsageAttribute), inherit: false);
-							if ((int)attribs.LongLength == 1)
+							if(propType == typeof(DateTime))
 							{
-								LisDateTimeUsageAttribute dtAttrib = (LisDateTimeUsageAttribute)attribs[0];
-								dateTimeUsage = dtAttrib.DateTimeUsage;
+								LisDateTimeUsage dateTimeUsage = LisDateTimeUsage.DateTime;
+								attribs = prop.GetCustomAttributes(typeof(LisDateTimeUsageAttribute), inherit: false);
+								if((int)attribs.LongLength == 1)
+								{
+									LisDateTimeUsageAttribute dtAttrib = (LisDateTimeUsageAttribute)attribs[0];
+									dateTimeUsage = dtAttrib.DateTimeUsage;
+								}
+								prop.SetValue(this, fRemoveOptionalSubFields(field).LisStringToDateTime(dateTimeUsage), null);
 							}
-							prop.SetValue(this, fRemoveOptionalSubFields(field).LisStringToDateTime(dateTimeUsage), null);
-						}
-						else if (propType.IsEnum)
-						{
-							prop.SetValue(this, fCreateLisEnum(fRemoveOptionalSubFields(field), propType), null);
-						}
-						else if (propType.BaseType == typeof(AbstractLisSubRecord))
-						{
-							prop.SetValue(this, fCreateSubrecord(field, propType), null);
-						}
-						else if (propType.IsArray)
-						{
-							if (!(attrib is LisRecordRemainingFieldsAttribute))
+							else if(propType.IsEnum)
 							{
-								throw new FormatException("The LIS String was not of the correct format.");
+								prop.SetValue(this, fCreateLisEnum(fRemoveOptionalSubFields(field), propType), null);
 							}
-							prop.SetValue(this, fCreateRemainingFieldsArray(rf, attrib.FieldIndex), null);
+							else if(propType.BaseType == typeof(AbstractLisSubRecord))
+							{
+								prop.SetValue(this, fCreateSubrecord(field, propType), null);
+							}
+							else if(propType.IsArray)
+							{
+								if(!(attrib is LisRecordRemainingFieldsAttribute))
+								{
+									throw new FormatException("The LIS String was not of the correct format.");
+								}
+								prop.SetValue(this, fCreateRemainingFieldsArray(rf, attrib.FieldIndex), null);
+							}
+						}
+						else
+						{
+							prop.SetValue(this, field, null);
 						}
 					}
 					else
 					{
-						prop.SetValue(this, field, null);
+						prop.SetValue(this, int.Parse(fRemoveOptionalSubFields(field)), null);
 					}
 				}
-				else
+				catch(Exception ex)
 				{
-					prop.SetValue(this, int.Parse(fRemoveOptionalSubFields(field)), null);
-				}
+
+                    if(LisParserSettings.ThrowExceptionOnError)
+                    {
+                        throw ex;
+                    }
+					else
+					{
+                        fLog?.Warn($"{prop?.Name}: invalid field content ({field}) ");
+					}
+                }            
 			}
 		}
 
 		public AbstractLisRecord()
 		{
-		}
+            fLog = LoggerFactory.GetLogger(typeof(AbstractLisRecord));
+        }
 	}
 }

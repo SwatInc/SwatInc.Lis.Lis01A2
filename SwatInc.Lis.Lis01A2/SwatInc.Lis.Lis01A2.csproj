@@ -1,12 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="slf4net" Version="1.1.0" />
     <PackageReference Include="System.IO.Ports" Version="5.0.1" />
   </ItemGroup>
-
+  <ItemGroup Condition="$(TargetFramework.StartsWith('netcore'))" >
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))" >
+  </ItemGroup>
 </Project>
